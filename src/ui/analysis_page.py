@@ -6,16 +6,16 @@ import json
 import streamlit as st
 from datetime import datetime
 
-from models.conversation_analyzer import ConversationAnalyzer
+from models.conversation_summarizer import ConversationSummarizer
 
 def render_analysis_page():
     """
-    会話分析ページをレンダリングする
+    会話まとめページをレンダリングする
     """
-    st.title("会話分析")
+    st.title("会話まとめ")
     
     # 会話履歴の選択
-    st.subheader("分析する会話を選択")
+    st.subheader("まとめ対象の会話履歴を選択")
     
     # conversationsディレクトリが存在しない場合は作成
     os.makedirs("conversations", exist_ok=True)
@@ -34,63 +34,24 @@ def render_analysis_page():
         format_func=lambda x: f"{x} ({datetime.fromtimestamp(os.path.getmtime(os.path.join('conversations', x))).strftime('%Y-%m-%d %H:%M:%S')})"
     )
     
-    # 分析ボタン
-    analyze_button = st.button("会話を分析")
+    # システムプロンプト入力
+    st.subheader("システムプロンプト")
+    system_prompt = st.text_area("システムプロンプトを入力してください", height=150)
     
-    if analyze_button and selected_file:
+    # まとめ実行ボタン
+    summarize_button = st.button("会話をまとめる")
+    
+    if summarize_button and selected_file and system_prompt:
         # 会話履歴の読み込み
         with open(os.path.join("conversations", selected_file), "r", encoding="utf-8") as f:
             conversation = json.load(f)
-        
-        # 会話分析の実行
-        with st.spinner("会話を分析しています..."):
-            analyzer = ConversationAnalyzer()
-            analysis_result = analyzer.analyze_conversation(conversation)
+
+        # まとめの実行
+        with st.spinner("会話をまとめています..."):
+            summarizer = ConversationSummarizer()
+            summary_result = summarizer.summarize_conversation(conversation, system_prompt)
             
-            # 分析結果の保存
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            analysis_file = f"conversations/analysis_{timestamp}.json"
-            with open(analysis_file, "w", encoding="utf-8") as f:
-                json.dump(analysis_result, f, ensure_ascii=False, indent=2)
-            
-            # HTMLレポートの生成と保存
-            html_report = analyzer.generate_report(analysis_result, format="html")
-            html_file = f"conversations/analysis_{timestamp}.html"
-            with open(html_file, "w", encoding="utf-8") as f:
-                f.write(html_report)
-            
-            st.success(f"分析が完了しました。結果を保存しました:\n- JSON: {analysis_file}\n- HTML: {html_file}")
-            
-            # 分析結果の表示
-            st.subheader("分析結果")
-            
-            # タブで表示
-            tab1, tab2 = st.tabs(["レポート", "JSON"])
-            
-            with tab1:
-                st.components.v1.html(html_report, height=600, scrolling=True)
-                
-                # HTMLファイルのダウンロードボタン
-                with open(html_file, "r", encoding="utf-8") as f:
-                    html_content = f.read()
-                    
-                st.download_button(
-                    label="HTMLレポートをダウンロード",
-                    data=html_content,
-                    file_name=f"analysis_{timestamp}.html",
-                    mime="text/html"
-                )
-            
-            with tab2:
-                st.json(analysis_result)
-                
-                # JSONファイルのダウンロードボタン
-                with open(analysis_file, "r", encoding="utf-8") as f:
-                    json_content = f.read()
-                    
-                st.download_button(
-                    label="JSON分析結果をダウンロード",
-                    data=json_content,
-                    file_name=f"analysis_{timestamp}.json",
-                    mime="application/json"
-                ) 
+        st.subheader("まとめ結果")
+        st.json(summary_result)
+    elif summarize_button and not system_prompt:
+        st.warning("システムプロンプトを入力してください。") 

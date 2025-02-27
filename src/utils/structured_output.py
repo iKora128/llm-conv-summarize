@@ -256,4 +256,51 @@ def create_final_output_schema() -> Dict[str, Any]:
             }
         },
         "required": ["title", "summary", "key_points", "topics", "human_analysis", "assistant_analysis", "overall_quality"]
+    }
+
+def create_conversation_summary_schema() -> Dict[str, Any]:
+    """
+    会話のまとめ用のスキーマを作成する
+    
+    Returns:
+        会話のまとめ用のスキーマ
+    """
+    return {
+        "type": SchemaType.OBJECT,
+        "properties": {
+            "profile": {
+                "type": SchemaType.STRING,
+                "description": "基本的なプロフィール情報。生年月日や履歴書に書くような内容など。"
+            },
+            "episode": {
+                "type": SchemaType.ARRAY,
+                "description": "エピソード記憶。タイムスタンプ付きで、回を重ねるごとに増やしていく。関係性や一貫性を司る。",
+                "items": {
+                    "type": SchemaType.OBJECT,
+                    "properties": {
+                        "content": {
+                            "type": SchemaType.STRING,
+                            "description": "エピソードの内容"
+                        },
+                        "timestamp": {
+                            "type": SchemaType.STRING,
+                            "description": "エピソードの日時（ISO形式）"
+                        }
+                    },
+                    "required": ["content", "timestamp"]
+                }
+            },
+            "next": {
+                "type": SchemaType.ARRAY,
+                "description": "次回会ったときに聞くべき内容。エピソードとも関連して、次回会ったときに聞くと良い内容。",
+                "items": {
+                    "type": SchemaType.STRING
+                }
+            },
+            "system_prompt": {
+                "type": SchemaType.STRING,
+                "description": "会話で使用されたシステムプロンプト"
+            }
+        },
+        "required": ["profile", "episode", "next"]
     } 

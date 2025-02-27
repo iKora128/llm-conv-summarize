@@ -12,7 +12,6 @@ from models.llm_manager import LLMManager
 from utils.html_generator import generate_chat_html
 from ui.history_page import render_history_page
 from ui.analysis_page import render_analysis_page
-from ui.profile_page import render_profile_page
 
 # 環境変数の読み込み
 load_dotenv()
@@ -94,7 +93,7 @@ with st.sidebar:
     st.subheader("ページ")
     page = st.radio(
         "ページを選択",
-        options=["会話実験", "会話履歴", "会話分析", "ユーザープロファイル"],
+        options=["会話実験", "会話履歴", "会話分析"],
         index=0,
         key="page_selection"
     )
@@ -110,7 +109,7 @@ with st.sidebar:
         )
         human_model = st.selectbox(
             "人間役モデル",
-            options=["gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
+            options=["gemini-2.0-flash", "gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
             index=0,
         )
         
@@ -118,12 +117,12 @@ with st.sidebar:
         st.subheader("システムプロンプト")
         assistant_system_prompt = st.text_area(
             "アシスタント用システムプロンプト",
-            value="あなたは親切で役立つAIアシスタントです。ユーザーの質問に対して、正確で有益な情報を提供してください。",
+            value="あなたは親切で役立つAIアシスタントです。普段友達と話すように、あの…ええと、少しどもりながら自然な会話をする感じで、質問に対して分かりやすく答えてください。専門的な内容も、固い表現を避け、軽い口調で説明します。ASRで録音されたような、多少のフィラーや言い間違いがあっても構わない、リアルな会話感を大事にしてください。会話は、各発話が短く区切られ、早めにターンテイキングが発生するようにしてください.",
             height=150,
         )
         human_system_prompt = st.text_area(
             "人間役用システムプロンプト",
-            value="あなたは人間として振る舞ってください。AIアシスタントとの会話で、自然な返答をしてください。質問は具体的に、会話は自然に進めてください。チャット言葉ではなく、普通の話し言葉を使ってください。",
+            value="あなたはおしゃべりでフレンドリーな人間です。普段の会話では、時々『えーっと』や『あのー』などのフィラーが入ることもあり、自然な話し言葉で話します。ASRで変換された、少し曖昧で省略が多い会話文でも構いません。会話は、発話が短く、息継ぎやターンテイキングが早く起こるように設計してください。場合によっては、一方が優位なスピーカーとなり続け、もう一方が聞く一方になるシナリオも想定してください.",
             height=150,
         )
         
@@ -270,6 +269,3 @@ elif st.session_state.current_page == "会話履歴":
     
 elif st.session_state.current_page == "会話分析":
     render_analysis_page()
-    
-elif st.session_state.current_page == "ユーザープロファイル":
-    render_profile_page()
