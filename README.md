@@ -9,6 +9,7 @@ LLM同士をチャットさせて、その会話履歴を保存・分析する�
   - 一方が主導する会話シナリオにも対応
 - ストリーミング表示の安定性向上
 - 会話分析機能の精度向上
+- パッケージ管理をuvに移行し、依存関係の管理を改善
 
 ## 機能
 
@@ -24,6 +25,7 @@ LLM同士をチャットさせて、その会話履歴を保存・分析する�
 ## 技術スタック
 
 - Python 3.12+
+- uv: 高速なPythonパッケージマネージャー
 - Streamlit: UIフレームワーク
 - Google Generative AI (Gemini 2.0 Flash): アシスタント役LLM
 - OpenAI API (GPT-4o): 人間役LLM
@@ -46,19 +48,16 @@ git clone <repository-url>
 cd llm-summarize
 ```
 
-2. 仮想環境を作成して有効化
+2. uvのインストール
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Linuxの場合
-# または
-.venv\Scripts\activate  # Windowsの場合
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-3. 依存関係をインストール
+3. 依存関係のインストール
 
 ```bash
-pip install -e .
+uv sync
 ```
 
 4. 環境変数を設定
@@ -82,7 +81,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ### アプリケーションの起動
 
 ```bash
-streamlit run src/app.py
+uv run streamlit run src/app.py
 ```
 
 ブラウザで`http://localhost:8501`を開くと、アプリケーションが表示されます。
