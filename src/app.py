@@ -98,58 +98,67 @@ with st.sidebar:
         key="page_selection"
     )
     st.session_state.current_page = page
-    
-    if page == "会話実験":
-        # モデル選択
-        st.subheader("モデル設定")
-        assistant_model = st.selectbox(
-            "アシスタントモデル",
-            options=["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
-            index=0,
-        )
-        human_model = st.selectbox(
-            "人間役モデル",
-            options=["gemini-2.0-flash", "gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
-            index=0,
-        )
-        
-        # システムプロンプト設定
-        st.subheader("システムプロンプト")
-        assistant_system_prompt = st.text_area(
-            "アシスタント用システムプロンプト",
-            value="あなたは親切で役立つAIアシスタントです。普段友達と話すように、あの…ええと、少しどもりながら自然な会話をする感じで、質問に対して分かりやすく答えてください。専門的な内容も、固い表現を避け、軽い口調で説明します。ASRで録音されたような、多少のフィラーや言い間違いがあっても構わない、リアルな会話感を大事にしてください。会話は、各発話が短く区切られ、早めにターンテイキングが発生するようにしてください.",
-            height=150,
-        )
-        human_system_prompt = st.text_area(
-            "人間役用システムプロンプト",
-            value="あなたはおしゃべりでフレンドリーな人間です。普段の会話では、時々『えーっと』や『あのー』などのフィラーが入ることもあり、自然な話し言葉で話します。ASRで変換された、少し曖昧で省略が多い会話文でも構いません。会話は、発話が短く、息継ぎやターンテイキングが早く起こるように設計してください。場合によっては、一方が優位なスピーカーとなり続け、もう一方が聞く一方になるシナリオも想定してください.",
-            height=150,
-        )
-        
-        # 会話設定
-        st.subheader("会話設定")
-        num_turns = st.slider("会話ターン数", min_value=1, max_value=20, value=5)
-        use_streaming = st.checkbox("ストリーミングモードを使用", value=True)
-        
-        # 保存形式
-        st.subheader("保存形式")
-        save_json = st.checkbox("JSONで保存", value=True)
-        save_html = st.checkbox("HTMLで保存", value=True)
 
 # 現在のページに応じたコンテンツを表示
 if st.session_state.current_page == "会話実験":
     # メイン画面
     st.title("LLM同士の会話実験")
     
+    # モデル選択
+    st.subheader("モデル設定")
+    col1, col2 = st.columns(2)
+    with col1:
+        assistant_model = st.selectbox(
+            "アシスタントモデル",
+            options=["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+            index=0,
+        )
+    with col2:
+        human_model = st.selectbox(
+            "人間役モデル",
+            options=["gemini-2.0-flash", "gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
+            index=0,
+        )
+
+    # システムプロンプト設定
+    st.subheader("システムプロンプト")
+    assistant_system_prompt = st.text_area(
+        "アシスタント用システムプロンプト",
+        value="普段友達と話すように、あの…ええと、少しどもりながら自然な会話をする感じで、質問に対して分かりやすく答えてください。専門的な内容も、固い表現を避け、軽い口調で説明します。ASRで録音されたような、多少のフィラーや言い間違いがあっても構わない、リアルな会話感を大事にしてください。会話は、各発話が短く区切られ、早めにターンテイキングが発生するようにしてください.",
+        height=150,
+    )
+    human_system_prompt = st.text_area(
+        "人間役用システムプロンプト",
+        value="あなたはおしゃべりでフレンドリーな人間です。普段の会話では、時々『えーっと』や『あのー』などのフィラーが入ることもあり、自然な話し言葉で話します。ASRで変換された、少し曖昧で省略が多い会話文でも構いません。会話は、発話が短く、息継ぎやターンテイキングが早く起こるように設計してください。場合によっては、一方が優位なスピーカーとなり続け、もう一方が聞く一方になるシナリオも想定してください.",
+        height=150,
+    )
+    
+    # 会話設定
+    st.subheader("会話設定")
+    col3, col4 = st.columns(2)
+    with col3:
+        num_turns = st.slider("会話ターン数", min_value=1, max_value=20, value=5)
+    with col4:
+        use_streaming = st.checkbox("ストリーミングモードを使用", value=True)
+    
+    # 保存形式
+    st.subheader("保存形式")
+    col5, col6 = st.columns(2)
+    with col5:
+        save_json = st.checkbox("JSONで保存", value=True)
+    with col6:
+        save_html = st.checkbox("HTMLで保存", value=True)
+    
     # 初期プロンプト入力
+    st.subheader("初期プロンプト")
     initial_prompt = st.text_area(
-        "初期プロンプト（人間役の最初の発言）",
+        "人間役の最初の発言",
         value="こんにちは！最近、AIについて興味を持ち始めました。AIの基本的な仕組みについて教えてもらえますか？",
         height=100,
     )
     
     # 会話開始ボタン
-    start_button = st.button("会話を開始")
+    start_button = st.button("会話を開始", use_container_width=True)
     
     # ストリーミング表示用のコンテナ
     if use_streaming:

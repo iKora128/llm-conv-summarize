@@ -7,8 +7,6 @@ import google.generativeai as genai
 from google import genai as genai_new
 from dotenv import load_dotenv
 
-from utils.structured_output import create_conversation_summary_schema
-
 # 環境変数の読み込み
 load_dotenv()
 
@@ -57,32 +55,62 @@ class ConversationSummarizer:
         try:
             conversation_text = self._format_conversation(conversation)
             prompt = f"""
-以下はLLM同士のカジュアルな会話だよ。
+以下はUserとAssistantのカジュアルな会話です。
+次にUserとはなしたときに会話の記憶として引き出せるよう、以下の3つの情報を自然な文章でまとめてください。
 
 【会話履歴】
 {conversation_text}
 【システムプロンプト】
 {system_prompt}
 
-上記の会話をまとめるね。以下の3つの情報を含めて、日常会話のようなフランクな口調でまとめて:
-1. profile: 基本的なプロフィール（例: 生年月日、履歴書的な情報）
-2. episode: 会話のエピソード記憶。可能ならタイムスタンプも入れて、回ごとに記録してね。
-3. next: 次回会ったときに聞くと喜ばれる話題
+以下の形式で、箇条書きではなく自然な文章で出力してください：
+
+profile: その人となりや印象に残った特徴を自然な文章で書いてください
+episode: この会話で話した内容や印象に残ったことを、ストーリー形式でまとめてください
+next: 次回会ったときに話したい話題や、掘り下げたい内容を自然な文章で書いてください
+
+出力例：
+profile: 技術に興味があり、特にAIの分野に強い関心を持っている20代後半のエンジニア。話し方は丁寧だが、フランクな雰囲気で会話を楽しむタイプ。
+
+episode: 今回の会話では主にAIの基本的な仕組みについて話し合った。特に機械学習の概念に興味を持っており、実際の応用例について具体的な質問をしていた。説明を聞きながら、自分なりの解釈を加えて理解を深めようとする姿勢が印象的だった。
+
+next: 機械学習の実践的な応用について、特に画像認識や自然言語処理の具体例を紹介すると喜ばれそう。また、AIプロジェクトの始め方についても興味を持っているようなので、初心者向けの学習リソースや実践的なプロジェクトのアイデアを共有できると良いかもしれない。
 """
-            
-            summary_schema = create_conversation_summary_schema()
-            
             try:
                 response = self.genai_client.models.generate_content(
                     model=self.model_name,
-                    contents=prompt,
-                    config=genai_new.types.GenerateContentConfig(
-                        response_schema=summary_schema
-                    )
+                    contents=prompt
                 )
                 result_text = response.text
                 try:
-                    summary = json.loads(result_text)
+                    # プロンプトの形式に従ってパースを試みる
+                    lines = result_text.strip().split('\n')
+                    summary = {
+                        "profile": "",
+                        "episode": [],
+                        "next": []
+                    }
+                    
+                    current_key = None
+                    for line in lines:
+                        line = line.strip()
+                        if line.startswith('profile:'):
+                            current_key = 'profile'
+                            summary['profile'] = line.replace('profile:', '').strip()
+                        elif line.startswith('episode:'):
+                            current_key = 'episode'
+                        elif line.startswith('next:'):
+                            current_key = 'next'
+                        elif line and current_key:
+                            if line.startswith('- '):
+                                line = line[2:]  # 箇条書きの「- 」を削除
+                            if current_key == 'episode':
+                                summary['episode'].append(line)
+                            elif current_key == 'next':
+                                summary['next'].append(line)
+                            elif current_key == 'profile' and not summary['profile']:
+                                summary['profile'] = line
+
                 except Exception as e:
                     summary = {"raw_text": result_text}
             except Exception as e:
@@ -90,14 +118,38 @@ class ConversationSummarizer:
                 try:
                     response = self.genai_client.models.generate_content(
                         model=self.fallback_model_name,
-                        contents=prompt,
-                        config=genai_new.types.GenerateContentConfig(
-                            response_schema=summary_schema
-                        )
+                        contents=prompt
                     )
                     result_text = response.text
                     try:
-                        summary = json.loads(result_text)
+                        # プロンプトの形式に従ってパースを試みる
+                        lines = result_text.strip().split('\n')
+                        summary = {
+                            "profile": "",
+                            "episode": [],
+                            "next": []
+                        }
+                        
+                        current_key = None
+                        for line in lines:
+                            line = line.strip()
+                            if line.startswith('profile:'):
+                                current_key = 'profile'
+                                summary['profile'] = line.replace('profile:', '').strip()
+                            elif line.startswith('episode:'):
+                                current_key = 'episode'
+                            elif line.startswith('next:'):
+                                current_key = 'next'
+                            elif line and current_key:
+                                if line.startswith('- '):
+                                    line = line[2:]  # 箇条書きの「- 」を削除
+                                if current_key == 'episode':
+                                    summary['episode'].append(line)
+                                elif current_key == 'next':
+                                    summary['next'].append(line)
+                                elif current_key == 'profile' and not summary['profile']:
+                                    summary['profile'] = line
+
                     except Exception as e:
                         summary = {"raw_text": result_text}
                 except Exception as e2:
