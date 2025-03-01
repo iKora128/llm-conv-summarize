@@ -23,8 +23,8 @@ class ConversationSummarizer:
             self.genai_client = None
         
         # モデル設定
-        self.model_name = "gemini-2.0-flash"
-        self.fallback_model_name = "gemini-1.5-pro"
+        self.model_name = "gemini-2.0-flash-lite"
+        self.fallback_model_name = "gemini-2.0-flash"
 
     def _format_conversation(self, conversation: List[Dict[str, Any]]) -> str:
         """

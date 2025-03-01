@@ -110,13 +110,13 @@ if st.session_state.current_page == "会話実験":
     with col1:
         assistant_model = st.selectbox(
             "アシスタントモデル",
-            options=["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"],
+            options=["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"],
             index=0,
         )
     with col2:
         human_model = st.selectbox(
             "人間役モデル",
-            options=["gemini-2.0-flash", "gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
+            options=["gemini-2.0-flash-lite", "gpt-4o", "claude-3-opus", "claude-3-sonnet", "gemini-1.5-flash"],
             index=0,
         )
 

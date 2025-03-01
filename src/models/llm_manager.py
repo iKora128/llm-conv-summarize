@@ -46,8 +46,8 @@ class LLMManager:
         
         # 利用可能なモデル
         self.available_models = {
+            "gemini-2.0-flash-lite": self._call_gemini_new,
             "gemini-2.0-flash": self._call_gemini_new,
-            "gemini-1.5-pro": self._call_gemini_new,
             "gemini-1.5-flash": self._call_gemini_new,
             "gpt-4o": self._call_openai,
             "claude-3-opus": self._call_anthropic,
@@ -55,7 +55,7 @@ class LLMManager:
         }
         
         # デフォルトのモデル設定
-        self.assistant_model = os.getenv("ASSISTANT_MODEL", "gemini-1.5-pro")
+        self.assistant_model = os.getenv("ASSISTANT_MODEL", "gemini-2.0-flash")
         self.human_model = os.getenv("HUMAN_MODEL", "gpt-4o")
         
         # 会話履歴
@@ -64,7 +64,7 @@ class LLMManager:
     def _call_gemini(self, 
                     prompt: str, 
                     system_prompt: Optional[str] = None, 
-                    model: str = "gemini-1.5-pro",
+                    model: str = "gemini-2.0-flash",
                     stream: bool = False,
                     stream_callback: Optional[Callable[[str], None]] = None) -> str:
         """
@@ -159,7 +159,7 @@ class LLMManager:
     def _call_gemini_new(self, 
                     prompt: str, 
                     system_prompt: Optional[str] = None, 
-                    model: str = "gemini-1.5-pro",
+                    model: str = "gemini-2.0-flash",
                     stream: bool = False,
                     stream_callback: Optional[Callable[[str], None]] = None) -> str:
         """
